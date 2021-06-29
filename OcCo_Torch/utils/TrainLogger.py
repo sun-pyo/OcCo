@@ -41,7 +41,7 @@ class TrainLogger:
 
     def mkdir(self):
         timestr = str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))
-        experiment_dir = Path('./log/')
+        experiment_dir = Path('/content/drive/Shareddrives/PVN3D/OccO_Linemod/')
         experiment_dir.mkdir(exist_ok=True)
         experiment_dir = experiment_dir.joinpath(self.sf)
         experiment_dir.mkdir(exist_ok=True)

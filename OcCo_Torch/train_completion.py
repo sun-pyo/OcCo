@@ -41,8 +41,8 @@ def parse_args():
     parser.add_argument('--grid_scale', type=float, default=0.5, help='scale of the 2D grid [0.5]')
     parser.add_argument('--num_coarse', type=int, default=1024, help='# points in coarse gt [1024]')
     parser.add_argument('--emb_dims', type=int, default=1024, help='# dimension of DGCNN encoder [1024]')
-    parser.add_argument('--input_pts', type=int, default=1024, help='# points of occluded inputs [1024]')
-    parser.add_argument('--gt_pts', type=int, default=16384, help='# points of ground truth inputs [16384]')
+    parser.add_argument('--input_pts', type=int, default=16384, help='# points of occluded inputs [1024]')
+    parser.add_argument('--gt_pts', type=int, default=262144, help='# points of ground truth inputs [16384]')
 
     return parser.parse_args()
 
@@ -63,6 +63,9 @@ def main(args):
     elif args.dataset == 'shapenet':
         lmdb_train = 'data/shapenet/train.lmdb'
         lmdb_valid = 'data/shapenet/valid.lmdb'
+    elif args.dataset == 'linemod':
+        lmdb_train = './linemod_train.lmdb'
+        lmdb_valid = './linemod_test.lmdb'
     else:
         raise ValueError("Dataset is not available, it should be either ModelNet or ShapeNet")
 

@@ -10,6 +10,7 @@ from Torch_Utility import copy_parameters, weights_init, bn_momentum_adjust
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from torch.utils.tensorboard import SummaryWriter
 from S3DISDataLoader import S3DISDataset_HDF5
+from LineModDataLoader import LineModDataset
 from torch.utils.data import DataLoader
 from TrainLogger import TrainLogger
 from tqdm import tqdm
@@ -57,11 +58,11 @@ def main(args):
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-    root = 'data/indoor3d_sem_seg_hdf5_data'
-    NUM_CLASSES = len(seg_label_to_cat)
+    root = '/content/OcCo/OcCo_Torch/Linemod_preprocessed/data'
+    NUM_CLASSES = 15
 
-    TRAIN_DATASET = S3DISDataset_HDF5(root=root, split='train', test_area=args.test_area)
-    TEST_DATASET = S3DISDataset_HDF5(root=root, split='test', test_area=args.test_area)
+    TRAIN_DATASET = LineModDataset(root=root, split='train')
+    TEST_DATASET = LineModDataset(root=root, split='test')
     trainDataLoader = DataLoader(TRAIN_DATASET, batch_size=args.batch_size, shuffle=True, num_workers=4)
     testDataLoader = DataLoader(TEST_DATASET, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
@@ -77,7 +78,7 @@ def main(args):
     writer = SummaryWriter(os.path.join(MyLogger.experiment_dir, 'runs'))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    classifier = MODEL.get_model(num_class=NUM_CLASSES, num_channel=9, args=args).to(device)
+    classifier = MODEL.get_model(num_class=NUM_CLASSES, num_channel=3, args=args).to(device)
     criterion = MODEL.get_loss().to(device)
     classifier = torch.nn.DataParallel(classifier)
     print('=' * 27)
