@@ -61,8 +61,8 @@ def main(args):
     root = '/content/OcCo/OcCo_Torch/Linemod_preprocessed/data'
     NUM_CLASSES = 15
 
-    TRAIN_DATASET = LineModDataset(root=root, split='train')
-    TEST_DATASET = LineModDataset(root=root, split='test')
+    TRAIN_DATASET = LineModDataset(root=root, split='train', num_class=NUM_CLASSES)
+    TEST_DATASET = LineModDataset(root=root, split='test', num_class=NUM_CLASSES)
     trainDataLoader = DataLoader(TRAIN_DATASET, batch_size=args.batch_size, shuffle=True, num_workers=4)
     testDataLoader = DataLoader(TEST_DATASET, batch_size=args.batch_size, shuffle=False, num_workers=4)
 
@@ -154,14 +154,15 @@ def main(args):
 
         for points, target in tqdm(trainDataLoader, total=len(trainDataLoader), smoothing=0.9):
             writer.add_scalar('learning rate', scheduler.get_lr()[-1], MyLogger.step)
-            points, target = points.float().transpose(2, 1).cuda(), target.view(-1, 1)[:, 0].long().cuda()
-
+            points, target = points.float().transpose(2, 1).cuda(), target.view(-1).long().cuda()
+            print(target.shape)
             classifier.train()
             optimizer.zero_grad()
             # pdb.set_trace()
             if args.model == 'pointnet_semseg':
                 seg_pred, trans_feat = classifier(points)
                 seg_pred = seg_pred.contiguous().view(-1, NUM_CLASSES)
+                print(seg_pred.shape, target.shape, trans_feat.shape)
                 loss = criterion(seg_pred, target, trans_feat)
             else:
                 seg_pred = classifier(points)
@@ -195,8 +196,7 @@ def main(args):
                                      target.long().cpu().numpy(),
                                      loss.cpu().detach().numpy())
 
-            MyLogger.epoch_summary(writer=writer, training=False, mode='semseg')
-            if MyLogger.save_model:
+                
                 state = {
                     'step': MyLogger.step,
                     'miou': MyLogger.best_miou,
@@ -205,6 +205,7 @@ def main(args):
                     'optimizer_state_dict': optimizer.state_dict(),
                 }
                 torch.save(state, MyLogger.savepath)
+            MyLogger.epoch_summary(writer=writer, training=False, mode='semseg')
 
         scheduler.step()
         if args.scheduler == 'step':

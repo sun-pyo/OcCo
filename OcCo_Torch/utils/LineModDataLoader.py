@@ -5,7 +5,8 @@ import yaml
 from PIL import Image
 
 class LineModDataset(Dataset): 
-    def __init__(self, root, split):
+    def __init__(self, root, split, num_class):
+        self.num_class = num_class
         self.num_ppoints = 1024
         self.xmap = np.array([[j for i in range(640)] for j in range(480)])
         self.ymap = np.array([[i for i in range(640)] for j in range(480)])
@@ -95,7 +96,11 @@ class LineModDataset(Dataset):
         rand = np.random.choice(len(cld), self.num_ppoints)
         cld = cld[rand]
         labels = labels[rand]
+        labels = np.where(labels > 0, int(cls), 0)
         #target = np.concatenate((cld, labels), axis=1)
+        # zero = np.zeros((len(labels), self.num_class))
+        # zero[:, int(cls):int(cls)+1] = labels
+        # labels = zero
         return cld, labels
 
 

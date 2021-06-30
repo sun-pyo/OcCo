@@ -15,7 +15,7 @@ class TrainLogger:
         self.mkdir()
         self.setup(filename=filename)
         self.epoch_init()
-        self.save_model = False
+        self.save_model = True
         self.cls2name = cls2name
         self.best_instance_acc, self.best_class_acc, self.best_miou = 0., 0., 0.
         self.best_instance_epoch, self.best_class_epoch, self.best_miou_epoch = 0, 0, 0
