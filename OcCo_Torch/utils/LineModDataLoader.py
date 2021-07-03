@@ -27,6 +27,10 @@ class LineModDataset(Dataset):
             with open(txt_path, 'r') as f:
                 for line in f.readlines():
                     self.img_path.append(os.path.join(self.root, cls_dir, 'rgb', line.strip() + '.png'))
+        
+        if split == "test":
+            self.img_path = self.img_path[-240:]
+
 
     def dpt_2_cld(self, dpt, cam_scale, K):
         if len(dpt.shape) > 2:

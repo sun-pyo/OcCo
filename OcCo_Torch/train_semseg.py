@@ -40,6 +40,8 @@ def parse_args():
     parser.add_argument('--lr_decay', type=float, default=0.5, help='lr decay rate [default: 0.5]')
     parser.add_argument('--restore', action='store_true', help='restore the weights [default: False]')
     parser.add_argument('--restore_path', type=str, help='path to pre-saved model weights [default: ]')
+    parser.add_argument('--finetuning', action='store_true', help='restore the weights [default: False]')
+    parser.add_argument('--finetuning_path', type=str)
     parser.add_argument('--dropout', type=float, default=0.5, help='dropout rate in FCs [default: 0.5]')
     parser.add_argument('--bn_decay', action='store_true', help='use BN Momentum Decay [default: False]')
     parser.add_argument('--xavier_init', action='store_true', help='Xavier weight init [default: False]')
@@ -59,7 +61,7 @@ def main(args):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     root = '/content/OcCo/OcCo_Torch/Linemod_preprocessed/data'
-    NUM_CLASSES = 15
+    NUM_CLASSES = 16
 
     TRAIN_DATASET = LineModDataset(root=root, split='train', num_class=NUM_CLASSES)
     TEST_DATASET = LineModDataset(root=root, split='test', num_class=NUM_CLASSES)
@@ -84,7 +86,9 @@ def main(args):
     print('=' * 27)
     print('Using %d GPU,' % torch.cuda.device_count(), 'Indices: %s' % args.gpu)
     print('=' * 27)
-
+    if args.finetuning:
+        checkpoint = torch.load(args.finetuning_path)
+        classifier.feat = copy_parameters(classifier.feat, checkpoint, verbose=True)
     if args.restore:
         checkpoint = torch.load(args.restore_path)
         classifier = copy_parameters(classifier, checkpoint, verbose=True)
@@ -204,7 +208,9 @@ def main(args):
                     'model_state_dict': classifier.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                 }
-                torch.save(state, MyLogger.savepath)
+                #torch.save(state, MyLogger.savepath)
+                torch.save(state, os.path.join(MyLogger.checkpoints_dir,
+                                           "model_epoch_%d.pth" % epoch))
             MyLogger.epoch_summary(writer=writer, training=False, mode='semseg')
 
         scheduler.step()
